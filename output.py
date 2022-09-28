@@ -1,57 +1,3 @@
-
-from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication
-from PyQt5 import QtCore
-from pyqtgraph import PlotWidget
-import plotting as pl
-import numpy as np
-import os
-from threading import Thread
-import subprocess
-import schemas as sch
-
-
-def add_planet():
-    form.tableWidget.insertRow(1)
-
-
-def delete_planet():
-    if form.tableWidget.rowCount()>1:
-        form.tableWidget.removeRow(form.tableWidget.rowCount()-1)
-
-
-def get_column(n, s):
-    global form
-    res = np.zeros(s)
-    for i in range(s):
-        res[i] = float(form.tableWidget.item(i, n).text())
-    return res
-
-
-def draw():
-    global form
-    global window
-    s = form.tableWidget.rowCount()
-    m = get_column(4, s)
-    x = get_column(0, s)
-    y = get_column(1, s)
-    v_x = get_column(2, s)
-    v_y = get_column(3, s)
-    total_time = int(form.lineEdit_2.text())
-    step = int(form.lineEdit.text())
-    schema_type = 1
-    if form.radioButton_2.isChecked():
-        schema_type = 3
-    if form.radioButton_3.isChecked():
-        schema_type = 2
-    if form.radioButton_4.isChecked():
-        schema_type = 4
-    #args = str(m) + ' ' + str(x) + ' ' + str(y) + ' ' + str(v_x) + ' ' + str(v_y) + ' ' + str(total_time) + ' ' + str(step) + ' ' + str(schema_type)
-    #print(args)
-    #os.system("plotting.py " + args)
-
-
-
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'interface.ui'
@@ -62,46 +8,7 @@ def draw():
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-
-class Ui_MainWindow(QtWidgets.QMainWindow):
-
-    def __init__(self):
-        super(Ui_MainWindow, self).__init__()
-        self.setupUi(Ui_MainWindow)
-        self.canvas = pl.MplCanvas(self, width=50, height=40, dpi=100)
-        self.mass = 0
-        self.x = 0
-        self.y = 0
-        self.v_x = 0
-        self.v_y = 0
-        self.total_time = 0
-        self.time_step = 0
-        self.schema_type = 0
-        self.schema = None
-        self.count = 0
-        self.x_lim = 0
-        self.y_lim = 0
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(5)
-        self.timer.timeout.connect(self.update_plot)
-        self.setCentralWidget(self.canvas)
-
-    def update_plot(self, x, y, v_x, v_y):
-        self.canvas.ax.cla()  # Clear the canvas.
-        for i in range(len(self.schema.mass)):
-            self.canvas.ax.scatter(x[i, self.count], y[i, self.count])
-        self.canvas.ax.set_xlim([-self.x_lim, self.x_lim])
-        self.canvas.ax.set_ylim([-self.y_lim, self.y_lim])
-        self.canvas.ax_3d.cla()  # Clear the canvas.
-        for i in range(len(self.schema.mass)):
-            self.canvas.ax_3d.scatter(x[i, self.count], y[i, self.count], 0)
-        self.canvas.ax_3d.set_xlim([-self.x_lim, self.x_lim])
-        self.canvas.ax_3d.set_ylim([-self.y_lim, self.y_lim])
-        if self.count == self.schema.n:
-            self.timer.stop()
-        # Trigger the canvas to update and redraw.
-        self.canvas.draw()
-
+class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1052, 615)
@@ -347,14 +254,3 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.label_6.setText(_translate("MainWindow", "Центр масс Vx"))
         self.label_7.setText(_translate("MainWindow", "Центр масс Vy"))
 
-
-#Form, Window = uic.loadUiType('interface.ui')
-app = QApplication([])
-window = Ui_MainWindow()
-#form = Form()
-#form.setupUi(window)
-#form.pushButton.clicked.connect(add_planet)
-#form.pushButton_2.clicked.connect(delete_planet)
-#form.pushButton_3.clicked.connect(draw)
-window.show()
-app.exec_()

@@ -1,7 +1,10 @@
 import sys
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import QApplication
+
 import schemas as s
 from threading import Thread
+from multiprocessing import Queue, Process
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -27,6 +30,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
+        #self.queue = Queue(1)
         self.canvas = MplCanvas(self, width=50, height=40, dpi=100)
         self.mass = np.copy(m)
         self.x = np.copy(x)
@@ -79,10 +83,3 @@ class MainWindow(QtWidgets.QMainWindow):
             self.timer.stop()
         # Trigger the canvas to update and redraw.
         self.canvas.draw()
-
-
-def start_plotting(m, x, y, v_x, v_y, total_time: int, step: int, schema_type: int):
-    app = QtWidgets.QApplication([])
-    w = MainWindow(m, x, y, v_x, v_y, total_time, step, schema_type)
-    #w.show()
-    app.exec_()
