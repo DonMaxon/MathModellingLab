@@ -29,6 +29,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, m, x, y, v_x, v_y, total_time: int, step: int, schema_type: int, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
+        self.setFixedWidth(QApplication.desktop().availableGeometry().width())
+        self.setFixedHeight(QApplication.desktop().availableGeometry().height())
 
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
@@ -90,11 +92,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.canvas.ax.cla()  # Clear the canvas.
         for i in range(len(self.schema.mass)):
             self.canvas.ax.scatter(x[i, :], y[i, :])
+        self.canvas.ax.scatter(x[:, -1], y[:, -1], c='black')
         self.canvas.ax.set_xlim([-self.x_lim, self.x_lim])
         self.canvas.ax.set_ylim([-self.y_lim, self.y_lim])
         self.canvas.ax_3d.cla()  # Clear the canvas.
         for i in range(len(self.schema.mass)):
             self.canvas.ax_3d.scatter(x[i, :], y[i, :], 0)
+        self.canvas.ax_3d.scatter(x[:, -1], y[:, -1], 0, c='black')
         self.canvas.ax_3d.set_xlim([-self.x_lim, self.x_lim])
         self.canvas.ax_3d.set_ylim([-self.y_lim, self.y_lim])
         # Trigger the canvas to update and redraw.
