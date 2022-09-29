@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 
 
@@ -17,7 +19,7 @@ class PlanetSystem:
 	G_const = 6.67e-11
 
 	def __init__(self, m, x, y, v_x, v_y, total_time: int, step: int):
-		print("Start creating a system")
+		#print("Start creating a system")
 		self.mass = np.copy(m)
 		self.x = np.copy(x)
 		self.y = np.copy(y)
@@ -26,7 +28,7 @@ class PlanetSystem:
 		self.total_time = total_time
 		self.time_step = step
 		self.n = total_time//step
-		print("System was created")
+		#print("System was created")
 
 	def euler_scheme(self):
 		"""
@@ -51,10 +53,10 @@ class PlanetSystem:
 			rny -= ys[0, i-1]
 			forces_x = self.G_const * self.mass[0] * self.mass[1:] * rnx / (rnx * rnx + rny * rny) ** 1.5
 			forces_y = self.G_const * self.mass[0] * self.mass[1:] * rny / (rnx * rnx + rny * rny) ** 1.5
-			a_nx = forces_x/self.mass[1:]
-			a_ny = forces_y/self.mass[1:]
-			a_nxs = -np.sum(forces_x)/self.mass[0]
-			a_nys = -np.sum(forces_y)/self.mass[0]
+			a_nx = -forces_x/self.mass[1:]
+			a_ny = -forces_y/self.mass[1:]
+			a_nxs = np.sum(forces_x)/self.mass[0]
+			a_nys = np.sum(forces_y)/self.mass[0]
 			xs[:, i] = xs[:, i - 1] + vxs*self.time_step
 			ys[:, i] = ys[:, i - 1] + vys*self.time_step
 			vxs[1:] = vxs[1:] + a_nx*self.time_step
@@ -88,10 +90,10 @@ class PlanetSystem:
 			rny -= ys[0, i-1]
 			forces_x = self.G_const * self.mass[0] * self.mass[1:] * rnx / (rnx * rnx + rny * rny) ** 1.5
 			forces_y = self.G_const * self.mass[0] * self.mass[1:] * rny / (rnx * rnx + rny * rny) ** 1.5
-			a_nx = forces_x/self.mass[1:]
-			a_ny = forces_y/self.mass[1:]
-			a_nxs = -np.sum(forces_x)/self.mass[0]
-			a_nys = -np.sum(forces_y)/self.mass[0]
+			a_nx = -forces_x/self.mass[1:]
+			a_ny = -forces_y/self.mass[1:]
+			a_nxs = np.sum(forces_x)/self.mass[0]
+			a_nys = np.sum(forces_y)/self.mass[0]
 			vxs[1:] = vxs[1:] + a_nx*self.time_step
 			vxs[0] = vxs[0] + a_nxs*self.time_step
 			vxsc[i] = vxs[0]
@@ -118,25 +120,35 @@ class PlanetSystem:
 		xs[:, 0] = np.copy(self.x)
 		ys[:, 0] = np.copy(self.y)
 
-		for i in range(2, self.n):
-			rnx = np.copy(xs[1:, i-1])
-			rny = np.copy(ys[1:, i-1])
-			rnx -= xs[0, i-1]
-			rny -= ys[0, i-1]
+		for i in range(1, self.n):
+			rnx = np.copy(xs[1:, i - 1])
+			rny = np.copy(ys[1:, i - 1])
+			rnx -= xs[0, i - 1]
+			rny -= ys[0, i - 1]
 			forces_x = self.G_const * self.mass[0] * self.mass[1:] * rnx / (rnx * rnx + rny * rny) ** 1.5
 			forces_y = self.G_const * self.mass[0] * self.mass[1:] * rny / (rnx * rnx + rny * rny) ** 1.5
 			a_nx = np.zeros(len(self.mass))
 			a_ny = np.zeros(len(self.mass))
-			a_nx[1:] = forces_x/self.mass[1:]
-			a_ny[1:] = forces_y/self.mass[1:]
-			a_nx[0] = -np.sum(forces_x)/self.mass[0]
-			a_ny[0] = -np.sum(forces_y)/self.mass[0]
-			xs[:, i] = 2 * xs[:, i - 1] - xs[:, i - 2] + a_nx*self.time_step
-			ys[:, i] = 2 * ys[:, i - 1] - ys[:, i - 2] + a_ny*self.time_step
-			vxs = (xs[:, i] - xs[:, i - 2])/2/self.time_step
-			vxsc[i] = vxs[0]
-			vys[1:] = (ys[:, i] - ys[:, i - 2])/2/self.time_step
-			vysc[i] = vxs[0]
+			a_nx[1:] = -forces_x / self.mass[1:]
+			a_ny[1:] = -forces_y / self.mass[1:]
+			a_nx[0] = np.sum(forces_x) / self.mass[0]
+			a_ny[0] = np.sum(forces_y) / self.mass[0]
+			if i == 1:
+				xs[:, i] = xs[:, i - 1] + vxs * self.time_step
+				ys[:, i] = ys[:, i - 1] + vys * self.time_step
+				vxs = vxs + a_nx * self.time_step
+				vxsc[i] = vxs[0]
+				vys = vys + a_ny * self.time_step
+				vysc[i] = vxs[0]
+			else:
+				xs[:, i] = 2 * xs[:, i - 1] - xs[:, i - 2] + a_nx*self.time_step**2
+				ys[:, i] = 2 * ys[:, i - 1] - ys[:, i - 2] + a_ny*self.time_step**2
+				vxs -= vxs
+				vxs += (xs[:, i] - xs[:, i - 2])/2/self.time_step
+				vxsc[i] = vxs[0]
+				vys -= vys
+				vys += (ys[:, i] - ys[:, i - 2])/2/self.time_step
+				vysc[i] = vys[0]
 		return xs, ys, vxsc, vysc
 
 	def beeman_scheme(self):
@@ -168,22 +180,22 @@ class PlanetSystem:
 			forces_y = self.G_const * self.mass[0] * self.mass[1:] * rny / (rnx * rnx + rny * rny) ** 1.5
 			a_nx = np.zeros(len(self.mass))
 			a_ny = np.zeros(len(self.mass))
-			a_nx[1:] = forces_x/self.mass[1:]
-			a_ny[1:] = forces_y/self.mass[1:]
-			a_nx[0] = -np.sum(forces_x)/self.mass[0]
-			a_ny[0] = -np.sum(forces_y)/self.mass[0]
+			a_nx[1:] = -forces_x/self.mass[1:]
+			a_ny[1:] = -forces_y/self.mass[1:]
+			a_nx[0] = np.sum(forces_x)/self.mass[0]
+			a_ny[0] = np.sum(forces_y)/self.mass[0]
 			xs[:, i] = xs[:, i - 1] + vxs*self.time_step - (4*a_nx - a_nx_prev)/6*self.time_step**2
 			ys[:, i] = ys[:, i - 1] + vys*self.time_step - (4*a_ny - a_ny_prev)/6*self.time_step**2
-			rnx = np.copy(np.xs[1:, i])
-			rny = np.copy(np.ys[1:, i])
+			rnx = np.copy(xs[1:, i])
+			rny = np.copy(ys[1:, i])
 			rnx -= xs[0, i]
 			rny -= ys[0, i]
 			forces_x = self.G_const * self.mass[0] * self.mass[1:] * rnx / (rnx * rnx + rny * rny) ** 1.5
 			forces_y = self.G_const * self.mass[0] * self.mass[1:] * rny / (rnx * rnx + rny * rny) ** 1.5
-			a_nx_next[1:] = forces_x/self.mass[1:]
-			a_ny_next[1:] = forces_y/self.mass[1:]
-			a_nx_next[0] = -np.sum(forces_x)/self.mass[0]
-			a_ny_next[0] = -np.sum(forces_y)/self.mass[0]
+			a_nx_next[1:] = -forces_x/self.mass[1:]
+			a_ny_next[1:] = -forces_y/self.mass[1:]
+			a_nx_next[0] = np.sum(forces_x)/self.mass[0]
+			a_ny_next[0] = np.sum(forces_y)/self.mass[0]
 			vxs = vxs + (2 * a_nx_next + 5 * a_nx - a_nx_prev) / 6 * self.time_step
 			vxsc[i] = vxs[0]
 			vys = vys + (2 * a_ny_next + 5 * a_ny - a_ny_prev) / 6 * self.time_step

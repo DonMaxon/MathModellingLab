@@ -83,3 +83,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.timer.stop()
         # Trigger the canvas to update and redraw.
         self.canvas.draw()
+
+
+if __name__ == '__plotting__':
+    app = QtWidgets.QApplication(sys.argv)
+    sys.stdout = open('file.txt', 'w')
+    print(sys.argv)
+    sys.stdout.close()
+    #w = MainWindow(sys.)
+    app.exec_()
