@@ -50,6 +50,8 @@ def draw():
         schema_type = 2
     if form.radioButton_4.isChecked():
         schema_type = 4
+    if form.radioButton_5.isChecked():
+        schema_type = 5
     #th = Thread(target=pl.start_plotting, args=(m, x, y, v_x, v_y, total_time, step, schema_type))
     #th.start()
     th = Thread(target=run, args=(m, x, y, v_x, v_y, total_time, step, schema_type))

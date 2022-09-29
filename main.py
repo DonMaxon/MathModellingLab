@@ -54,6 +54,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.xx, self.yy, self.vx, self.vy = self.schema.verlet_scheme()
             if self.schema_type == 4:
                 self.xx, self.yy, self.vx, self.vy = self.schema.beeman_scheme()
+            if self.schema_type == 5:
+                self.xx, self.yy, self.vx, self.vy = self.schema.runge_kutta_scheme()
         except Exception as e:
             sys.stdout = open('error.txt', 'w')
             print(e)

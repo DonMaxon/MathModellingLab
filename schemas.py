@@ -203,3 +203,60 @@ class PlanetSystem:
 			a_nx_prev = np.copy(a_nx)
 			a_ny_prev = np.copy(a_ny)
 		return xs, ys, vxsc, vysc
+
+	def runge_kutta_scheme(self):
+		"""
+		Функция расчета координат планет по схеме Эйлера
+		Входные данные берутся из класса
+		:return: двумерные массивы координат (в массиве данные для всех планет на всех временных слоях),
+		массивы скорости звезды на всех временных слоях
+		"""
+		xs = np.zeros((len(self.mass), self.n))
+		ys = np.zeros((len(self.mass), self.n))
+		vxsc = np.zeros(self.n)
+		vysc = np.zeros(self.n)
+		vxs = np.copy(self.v_x)
+		vys = np.copy(self.v_y)
+		xs[:, 0] = np.copy(self.x)
+		ys[:, 0] = np.copy(self.y)
+
+		for i in range(1, self.n):
+			rnx = np.copy(xs[1:, i-1])
+			rny = np.copy(ys[1:, i-1])
+			rnx -= xs[0, i-1]
+			rny -= ys[0, i-1]
+			forces_x = self.G_const * self.mass[0] * self.mass[1:] * rnx / (rnx * rnx + rny * rny) ** 1.5
+			forces_y = self.G_const * self.mass[0] * self.mass[1:] * rny / (rnx * rnx + rny * rny) ** 1.5
+			a_nx = -forces_x/self.mass[1:]
+			a_ny = -forces_y/self.mass[1:]
+			a_nxs = np.sum(forces_x)/self.mass[0]
+			a_nys = np.sum(forces_y)/self.mass[0]
+			asx = np.concatenate((np.array([a_nxs]), a_nx), axis=None)
+			asy = np.concatenate((np.array([a_nys]), a_ny), axis=None)
+			kx_1 = np.copy(vxs)
+			ky_1 = np.copy(vys)
+			kvx_1 = np.copy(asx)
+			kvy_1 = np.copy(asy)
+			kx_2 = vxs + kvx_1 / 2
+			ky_2 = vys + kvy_1 / 2
+			kvx_2 = np.copy(asx)
+			kvy_2 = np.copy(asy)
+			kx_3 = vxs + kvx_2 / 2
+			ky_3 = vys + kvy_2 / 2
+			kvx_3 = np.copy(asx)
+			kvy_3 = np.copy(asy)
+			kx_4 = vxs + kvx_3
+			ky_4 = vys + kvy_3
+			kvx_4 = np.copy(asx)
+			kvy_4 = np.copy(asy)
+			xs[:, i] = xs[:, i - 1] + (kx_1 + 2*kx_2 + 2*kx_3 + kx_4)*self.time_step/6
+			ys[:, i] = ys[:, i - 1] + (ky_1 + 2*ky_2 + 2*ky_3 + ky_4)*self.time_step/6
+			vxs = vxs + (kvx_1 + 2*kvx_2 + 2*kvx_3 + kvx_4)*self.time_step/6
+			vxsc[i] = vxs[0]
+			vys = vys + (kvy_1 + 2*kvy_2 + 2*kvy_3 + kvy_4)*self.time_step/6
+			vysc[i] = vxs[0]
+			sys.stdout = open('runge.txt', 'w')
+			print(vxs)
+			print(vys)
+			sys.stdout.close()
+		return xs, ys, vxsc, vysc
